@@ -22,19 +22,49 @@ namespace Horror_Game_Launcher
         string path_name = @Directory.GetCurrentDirectory();
         string instal_dir = null;
 
+        string width;
+        string height;
+        bool fullScreen;
+
         public Form1()
         {
             InitializeComponent();
 
-            if (File.Exists(path_name + "config.xml"))
+            if (File.Exists(path_name + "/config.xml"))
             {
-                GameVersion gv = new GameVersion();
-                XMLLoad<GameVersion> loadGameVersion = new XMLLoad<GameVersion>();
-
-                gv = loadGameVersion.LoadData(path_name + "config.xml");
-                gameVersion.Text = gv.Version.ToString();
-                currUpdate = gv.Version.ToString();
+                loadXMLFile();
             }
+            else
+                setupXMLFile();
+        }
+
+        private void setupXMLFile()
+        {
+            GameOptions go = new GameOptions();
+            go.Width = 1920;
+            go.Height = 1080;
+            go.FullScreen = true;
+            go.Version = 0;
+            XMLSave.SaveData(go, path_name + "/config.xml");
+
+            loadXMLFile();
+        }
+        private void loadXMLFile()
+        {
+            GameOptions go = new GameOptions();
+            XMLLoad<GameOptions> loadGameOptions = new XMLLoad<GameOptions>();
+
+            go = loadGameOptions.LoadData(path_name + "/config.xml");
+            width = go.Width.ToString();
+            height = go.Height.ToString();
+            gameVersion.Text = go.Version.ToString();
+            currUpdate = go.Version.ToString();
+            fullScreen = go.FullScreen;
+
+            widthBox.Text = width;
+            heightBox.Text = height;
+            
+
         }
 
         private void play_Click(object sender, EventArgs e)
@@ -49,7 +79,7 @@ namespace Horror_Game_Launcher
         private void update_Click(object sender, EventArgs e)
         {
             WebClient client = new WebClient();
-            Stream stream = client.OpenRead("http://download907.mediafire.com/vfdf8ia677dg/9byarvbix773oaj/version.txt");
+            Stream stream = client.OpenRead("http://horrorgame.net16.net/buildversion.txt");
             StreamReader sr = new StreamReader(stream);
 
             string content = sr.ReadToEnd();
@@ -65,13 +95,25 @@ namespace Horror_Game_Launcher
                     string filename = "horrorgame-" + content + ".zip";
                     instal_dir = filename;
 
+                    currUpdate = content;
+
                     Uri aurl = new Uri("http://www.horrorgame.net16.net/builds/" + filename);
 
                     client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
                     client.DownloadFileCompleted += new AsyncCompletedEventHandler(dlcompleted);
 
                     client.DownloadFileAsync(aurl, @filename);
-
+                    if (File.Exists(path_name + "/Horror Game.exe"))
+                    {
+                        File.Delete(path_name + "/Horror Game.exe");
+                        //System.IO.Directory.Delete(path_name + "/Horror Game_Data/");
+                       // Directory.Delete(path_name + "/Horror Game_Data/");
+                    }
+                    if (Directory.Exists(path_name + "/Horror Game_Data/"))
+                    {
+                        //System.IO.Directory.Delete(path_name + "/Horror Game_Data/");
+                        Directory.Delete(path_name + "/Horror Game_Data/", true);
+                    }
                    
                 }
             }
@@ -83,16 +125,11 @@ namespace Horror_Game_Launcher
 
         private void dlcompleted(object sender, AsyncCompletedEventArgs e)
         {
-            if (File.Exists(path_name + "Horror Game.exe"))
-            {
-                File.Delete(path_name + "Horror Game.exe");
-                Directory.Delete(path_name + "Horror Game_Data");
-            }
             ZipFile.ExtractToDirectory(path_name + "/" + instal_dir, path_name);
 
-            GameVersion gv = new GameVersion();
+            GameOptions gv = new GameOptions();
             gv.Version = int.Parse(currUpdate);
-            XMLSave.SaveData(gv, path_name + "config.xml");
+            XMLSave.SaveData(gv, path_name + "/config.xml");
             MessageBox.Show("Download Completed");
         }
 
@@ -107,30 +144,20 @@ namespace Horror_Game_Launcher
 
         private void label1_Click(object sender, EventArgs e)
         {
-            GameVersion gv = new GameVersion();
-            gv.Version = 0;
-            XMLSave.SaveData(gv, path_name + "config.xml");
-            GameVersion gvv = new GameVersion();
-            XMLLoad<GameVersion> loadGameVersion = new XMLLoad<GameVersion>();
 
-            gvv = loadGameVersion.LoadData(path_name + "config.xml");
-            gameVersion.Text = gvv.Version.ToString();
         }
 
         private void gameVersion_Click(object sender, EventArgs e)
         {
-            GameVersion gv = new GameVersion();
-            XMLLoad<GameVersion> loadGameVersion = new XMLLoad<GameVersion>();
 
-            gv = loadGameVersion.LoadData(path_name + "config.xml");
-            gameVersion.Text = gv.Version.ToString();
         }
 
         private void exit_Click(object sender, EventArgs e)
         {
-            GameVersion gv = new GameVersion();
-            gv.Version = 1;
-            XMLSave.SaveData(gv, path_name + "config.xml");
+            GameOptions go = new GameOptions();
+            go.Width = 1920;
+            go.Height = 1080;
+            XMLSave.SaveData(go, path_name + "/config.xml");
         }
 
         private void dlbar_Click(object sender, EventArgs e)
@@ -141,6 +168,39 @@ namespace Horror_Game_Launcher
 
     public class GameVersion
     {
+        private int version;
+
+        public int Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
+    }
+
+    public class GameOptions
+    {
+        private int width;
+        private int height;
+        private bool fullScreen;
+
+        public int Width
+        {
+            get { return width; }
+            set { width = value; }
+        }
+
+        public int Height
+        {
+            get { return height; }
+            set { height = value; }
+        }
+
+        public bool FullScreen
+        {
+            get { return fullScreen; }
+            set { fullScreen = value; }
+        }
+
         private int version;
 
         public int Version
