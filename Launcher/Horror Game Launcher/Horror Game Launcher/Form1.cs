@@ -63,7 +63,7 @@ namespace Horror_Game_Launcher
 
             widthBox.Text = width;
             heightBox.Text = height;
-            
+            fullscreenCheck.Checked = fullScreen;
 
         }
 
@@ -100,7 +100,7 @@ namespace Horror_Game_Launcher
                     Uri aurl = new Uri("http://www.horrorgame.net16.net/builds/" + filename);
 
                     client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
-                    client.DownloadFileCompleted += new AsyncCompletedEventHandler(dlcompleted);
+                    client.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler(dlcompleted);
 
                     client.DownloadFileAsync(aurl, @filename);
                     if (File.Exists(path_name + "/Horror Game.exe"))
@@ -154,15 +154,25 @@ namespace Horror_Game_Launcher
 
         private void exit_Click(object sender, EventArgs e)
         {
-            GameOptions go = new GameOptions();
-            go.Width = 1920;
-            go.Height = 1080;
-            XMLSave.SaveData(go, path_name + "/config.xml");
+            //GameOptions go = new GameOptions();
+            //go.Width = 1920;
+            //go.Height = 1080;
+            //XMLSave.SaveData(go, path_name + "/config.xml");
         }
 
         private void dlbar_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            GameOptions go = new GameOptions();
+            go.Width = int.Parse(widthBox.Text);
+            go.Height = int.Parse(heightBox.Text);
+            go.FullScreen = fullscreenCheck.Checked;
+            go.Version = int.Parse(currUpdate);
+            XMLSave.SaveData(go, path_name + "/config.xml");
         }
     }
 
